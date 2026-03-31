@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Moon, Sun, Download, Trash2, Bell, ChevronRight, Shield } from 'lucide-react'
 import { useCycleStore } from '@/store/cycleStore'
-import { exportAllData, downloadJSON } from '@/lib/storage'
+import { exportAllData, downloadJSON } from '@/lib/utils'
 import { downloadJSON as dl } from '@/lib/utils'
 import { Card } from '@/components/ui/Card'
 import { cn } from '@/lib/utils'

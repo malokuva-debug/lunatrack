@@ -1,24 +1,29 @@
 'use client'
 
 import { useState } from 'react'
-import { Moon, Sun, Download, Trash2, Bell, ChevronRight, Shield } from 'lucide-react'
-import { useCycleStore } from '@/store/cycleStore'
-import { exportAllData, downloadJSON } from '@/lib/utils'
-import { downloadJSON as dl } from '@/lib/utils'
-import { Card } from '@/components/ui/Card'
-import { cn } from '@/lib/utils'
 import { format } from 'date-fns'
+import { Moon, Sun, Download, ChevronRight, Shield } from 'lucide-react'
+import { useCycleStore } from '@/store/cycleStore'
+import { exportAllData } from '@/lib/storage'
+import { cn, downloadJSON } from '@/lib/utils'
+import { Card } from '@/components/ui/Card'
 
 export default function SettingsPage() {
   const { settings, updateSettings, toggleDarkMode, isDarkMode } = useCycleStore()
-  const [cycleLen, setCycleLen]   = useState(settings?.averageCycleLength ?? 28)
+  const [cycleLen,  setCycleLen]  = useState(settings?.averageCycleLength ?? 28)
   const [periodLen, setPeriodLen] = useState(settings?.averagePeriodLength ?? 5)
-  const [lastStart, setLastStart] = useState(settings?.lastPeriodStart ?? format(new Date(), 'yyyy-MM-dd'))
-  const [saved, setSaved]         = useState(false)
+  const [lastStart, setLastStart] = useState(
+    settings?.lastPeriodStart ?? format(new Date(), 'yyyy-MM-dd')
+  )
+  const [saved,     setSaved]     = useState(false)
   const [exporting, setExporting] = useState(false)
 
   const handleSave = () => {
-    updateSettings({ averageCycleLength: cycleLen, averagePeriodLength: periodLen, lastPeriodStart: lastStart })
+    updateSettings({
+      averageCycleLength: cycleLen,
+      averagePeriodLength: periodLen,
+      lastPeriodStart: lastStart,
+    })
     setSaved(true)
     setTimeout(() => setSaved(false), 2000)
   }
@@ -27,7 +32,7 @@ export default function SettingsPage() {
     setExporting(true)
     try {
       const json = await exportAllData()
-      dl(json, `luna-export-${format(new Date(), 'yyyy-MM-dd')}.json`)
+      downloadJSON(json, `luna-export-${format(new Date(), 'yyyy-MM-dd')}.json`)
     } finally {
       setExporting(false)
     }
@@ -35,11 +40,12 @@ export default function SettingsPage() {
 
   return (
     <div className="px-4 pt-8 pb-4 space-y-6 animate-fade-in">
-      <h1 className="font-display text-2xl font-bold text-gray-800 dark:text-gray-100">Settings</h1>
+      <h1 className="font-display text-2xl font-bold text-gray-800 dark:text-gray-100">
+        Settings
+      </h1>
 
-      {/* Cycle settings */}
       <section className="space-y-3">
-        <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-widest">Cycle</h2>
+        <SectionLabel>Cycle</SectionLabel>
         <Card className="p-5 space-y-4">
           <SettingRow label="Last period started">
             <input
@@ -50,25 +56,12 @@ export default function SettingsPage() {
               className="text-sm bg-transparent text-rose-500 font-medium focus:outline-none"
             />
           </SettingRow>
-
           <SettingRow label="Average cycle length">
-            <Stepper
-              value={cycleLen}
-              onChange={setCycleLen}
-              min={21} max={45}
-              unit="days"
-            />
+            <Stepper value={cycleLen}  onChange={setCycleLen}  min={21} max={45} unit="days" />
           </SettingRow>
-
           <SettingRow label="Average period length">
-            <Stepper
-              value={periodLen}
-              onChange={setPeriodLen}
-              min={2} max={10}
-              unit="days"
-            />
+            <Stepper value={periodLen} onChange={setPeriodLen} min={2}  max={10} unit="days" />
           </SettingRow>
-
           <button
             onClick={handleSave}
             className={cn(
@@ -83,16 +76,17 @@ export default function SettingsPage() {
         </Card>
       </section>
 
-      {/* Appearance */}
       <section className="space-y-3">
-        <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-widest">Appearance</h2>
+        <SectionLabel>Appearance</SectionLabel>
         <Card className="p-1">
           <button
             onClick={toggleDarkMode}
             className="w-full flex items-center justify-between px-4 py-3.5 rounded-2xl hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-colors"
           >
             <div className="flex items-center gap-3">
-              {isDarkMode ? <Moon size={18} className="text-gray-500" /> : <Sun size={18} className="text-amber-500" />}
+              {isDarkMode
+                ? <Moon size={18} className="text-gray-500" />
+                : <Sun size={18} className="text-amber-500" />}
               <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
                 {isDarkMode ? 'Dark Mode' : 'Light Mode'}
               </span>
@@ -107,10 +101,9 @@ export default function SettingsPage() {
         </Card>
       </section>
 
-      {/* Data */}
       <section className="space-y-3">
-        <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-widest">Data</h2>
-        <Card className="p-1 space-y-0">
+        <SectionLabel>Data</SectionLabel>
+        <Card className="p-1">
           <ActionRow
             icon={<Download size={18} className="text-sky-500" />}
             label="Export Data (JSON)"
@@ -126,18 +119,28 @@ export default function SettingsPage() {
         </Card>
       </section>
 
-      {/* About */}
       <section className="space-y-3">
-        <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-widest">About</h2>
+        <SectionLabel>About</SectionLabel>
         <Card className="p-5 text-center space-y-1">
-          <p className="font-display text-gray-700 dark:text-gray-200 font-semibold">Luna Cycle Tracker</p>
+          <p className="font-display text-gray-700 dark:text-gray-200 font-semibold">
+            Luna Cycle Tracker
+          </p>
           <p className="text-xs text-gray-400 dark:text-gray-500">Version 1.0.0 · Built with ❤️</p>
           <p className="text-xs text-gray-400 dark:text-gray-500 mt-2 leading-relaxed">
-            Luna is a private, offline-first period tracker. No data is ever sent to any server. Everything is stored locally on your device.
+            Luna is a private, offline-first period tracker. No data is ever sent to any server.
+            Everything is stored locally on your device.
           </p>
         </Card>
       </section>
     </div>
+  )
+}
+
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-widest">
+      {children}
+    </h2>
   )
 }
 
